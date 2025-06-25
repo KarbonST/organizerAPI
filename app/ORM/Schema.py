@@ -7,5 +7,6 @@ class ClientCreate(BaseModel):
     phone: constr(pattern=r"^\+7\s\d{3}\s\d{3}-\d{2}-\d{2}$")
     worker_fullname: str
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True,  # вместо orm_mode
+    }
