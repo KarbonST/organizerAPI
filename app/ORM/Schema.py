@@ -1,6 +1,6 @@
 from pydantic import BaseModel, constr
 
-class ClientCreate(BaseModel):
+class ClientBase(BaseModel):
     inn: constr(pattern=r"^\d{10}$")
     fullname: str
     company: str

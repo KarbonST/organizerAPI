@@ -2,7 +2,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-from ORM.Client import Base
+from app.ORM.Client import Base
 
 load_dotenv()
 
