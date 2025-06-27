@@ -44,3 +44,21 @@ def delete_all_clients(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Ошибка при удалении: {e}")
 
     return Response(status_code=204)
+
+@app.get("/clients/{inn}", response_model=ClientBase)
+def get_client_by_inn(inn: str, db: Session = Depends(get_db)):
+
+    client = db.query(Client).filter(Client.inn == inn).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Клиент не найден")
+    return client
+
+@app.delete("/clients/{inn}", status_code=204)
+def delete_client_by_inn(inn: str, db: Session = Depends(get_db)):
+
+    client = db.query(Client).filter(Client.inn == inn).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Клиент не найден")
+    db.delete(client)
+    db.commit()
+    return Response(status_code=204)
