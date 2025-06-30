@@ -18,3 +18,7 @@ class Client(Base):
 
     event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
     event = relationship("Event", back_populates="clients")
+
+    @property
+    def event_name(self) -> str:
+        return self.event.name
