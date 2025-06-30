@@ -12,6 +12,6 @@ class Client(Base):
     company_name = Column(String, nullable=False)
     is_client = Column(String, nullable=False)
     working_sphere = Column(String, nullable=False)
-    fullname = Column(String,    nullable=False)
+    contact_fullname = Column(String,    nullable=False)
     phone = Column(String,    nullable=False)
     client_request = Column(String, nullable=False)
