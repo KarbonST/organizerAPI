@@ -10,6 +10,8 @@ class ClientBase(BaseModel):
     phone: constr(pattern=r"^\+7\s\d{3}\s\d{3}-\d{2}-\d{2}$")
     client_request: str
 
+    event_id: int
+
     model_config = {
         "from_attributes": True,
     }

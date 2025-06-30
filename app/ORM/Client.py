@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 
-Base = declarative_base()
+from app.ORM.base import Base
 
 class Client(Base):
     __tablename__ = "clients"
@@ -15,3 +15,6 @@ class Client(Base):
     contact_fullname = Column(String,    nullable=False)
     phone = Column(String,    nullable=False)
     client_request = Column(String, nullable=False)
+
+    event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
+    event = relationship("Event", back_populates="clients")

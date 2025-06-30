@@ -2,8 +2,9 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-from app.ORM.Client import Base as ClientBase
-from app.ORM.Event import Base as EventBase
+from app.ORM.base import Base
+from app.ORM.Event import Event
+from app.ORM.Client import Client
 
 load_dotenv()
 
@@ -18,5 +19,5 @@ SessionLocal = sessionmaker(
     bind=engine,
 )
 
-ClientBase.metadata.create_all(bind=engine)
-EventBase.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
+
