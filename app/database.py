@@ -3,8 +3,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 from app.ORM.base import Base
-from app.ORM.Event import Event
-from app.ORM.Client import Client
+from app.ORM.Events import Events
+from app.ORM.Clients import Clients
 
 load_dotenv()
 

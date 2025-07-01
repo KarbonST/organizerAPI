@@ -1,10 +1,11 @@
 from typing import Type, Any, List, Dict
 
 from fastapi import HTTPException
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload
 
-from app.ORM.Client import Client
-from app.ORM.Event import Event
+from app.ORM.Clients import Clients
+from app.ORM.Events import Events
 from app.ORM.Schema import ClientCreateBase, EventBase, ClientReadBase
 
 
@@ -15,50 +16,53 @@ def find_all_from_table(db: Session, model: Type[Any], *relations_to_load: Any) 
     return query.all()
 
 def find_client_by_inn_and_event(db: Session, inn: str, event_id: int):
-    return db.query(Client).filter(Client.inn == inn, Client.event_id == event_id)
-
+    return db.query(Clients).filter(Clients.inn == inn, Clients.event_id == event_id).first()
 
 def find_event_in_client_table(db: Session, client_in: ClientCreateBase):
-    return db.query(Event).get(client_in.event_id)
+    return db.query(Events).filter(Events.id == client_in.event_id).first()
 
-def delete_all_from_table(db: Session, model: Type[Any]) -> int:
+def find_client_with_inn_on_event(db: Session, client_in: ClientCreateBase):
+    return db.query(Clients).filter(Clients.inn == client_in.inn, Clients.event_id == client_in.event_id).first()
+
+def find_event_in_table(db: Session, event_in: EventBase):
+    return db.query(Events).filter(Events.name == event_in.name).first()
+
+def find_event_by_id(db: Session, event_id: int):
+    event = db.query(Events).filter(Events.id == event_id).first()
+    return event.name if event else None
+
+def delete_all_from_table(db: Session, model: Type[Any]) -> bool:
     try:
-        deleted = db.query(model).delete(synchronize_session=False)
+        db.query(model).delete(synchronize_session=False)
         db.commit()
-        return deleted
-    except Exception as e:
+        return True
+    except SQLAlchemyError:
         db.rollback()
-        # Пробрасываем HTTPException, чтобы маршрут отдал корректный 500
-        raise HTTPException(status_code=500, detail=f"Ошибка при удалении: {e}")
+        return False
 
-def delete_client_by_inn_and_event(db: Session, inn: str, event_id: int):
+def delete_client_by_inn_and_event(db: Session, inn: str, event_id: int) -> bool:
     client = find_client_by_inn_and_event(db, inn, event_id)
-
     try:
         db.delete(client)
         db.commit()
-    except Exception as e:
+    except SQLAlchemyError:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Ошибка при удалении: {e}")
+        return False
+    return True
 
 def delete_event_by_id(db:Session, event_id: int):
-    pass
+    deleted = db.query(Events).filter(Events.id == event_id).delete()
+    db.commit()
+    return bool(deleted)
 
-def find_client_with_inn_on_event(db: Session, client_in: ClientCreateBase):
-    return db.query(Client).filter(Client.inn == client_in.inn, Client.event_id == client_in.event_id).first()
-
-def find_event_in_table(db: Session, event_in: EventBase):
-    return db.query(Event).filter(Event.name == event_in.name).first()
-
-def add_to_db(db: Session, model: Type[Any], data: Dict[str, Any]):
+def add_to_db(db: Session, model: Type[Any], data: Dict[str, Any]) -> bool:
     obj = model(**data)
     db.add(obj)
 
     try:
         db.commit()
         db.refresh(obj)
-    except Exception as e:
+        return True
+    except SQLAlchemyError:
         db.rollback()
-        raise HTTPException(400, detail=f"Ошибка при записи в БД: {e}")
-
-    return obj
+        return False

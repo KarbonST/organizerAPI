@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 
 from app.ORM.base import Base
 
-class Client(Base):
+class Clients(Base):
     __tablename__ = "clients"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -16,8 +16,8 @@ class Client(Base):
     phone = Column(String,    nullable=False)
     client_request = Column(String, nullable=False)
 
-    event_id = Column(Integer, ForeignKey("events.id"), nullable=False)
-    event = relationship("Event", back_populates="clients")
+    event_id = Column(Integer, ForeignKey("events.id", ondelete="CASCADE"), nullable=False)
+    event = relationship("Events", back_populates="clients")
 
     @property
     def event_name(self) -> str:
