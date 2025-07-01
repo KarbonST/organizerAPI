@@ -21,6 +21,9 @@ def find_client_by_inn_and_event(db: Session, inn: str, event_id: int):
 def find_event_in_client_table(db: Session, client_in: ClientCreateBase):
     return db.query(Events).filter(Events.id == client_in.event_id).first()
 
+def find_event_by_name(db: Session, event_name: str):
+    return db.query(Events).filter(Events.name == event_name).first()
+
 def find_client_with_inn_on_event(db: Session, client_in: ClientCreateBase):
     return db.query(Clients).filter(Clients.inn == client_in.inn, Clients.event_id == client_in.event_id).first()
 
@@ -54,6 +57,16 @@ def delete_event_by_id(db:Session, event_id: int):
     deleted = db.query(Events).filter(Events.id == event_id).delete()
     db.commit()
     return bool(deleted)
+
+def delete_event_by_name(db:Session, event_name: str) -> bool:
+    event = find_event_in_table(db, find_event_by_name(db, event_name))
+    try:
+        db.delete(event)
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        return False
+    return True
 
 def add_to_db(db: Session, model: Type[Any], data: Dict[str, Any]) -> bool:
     obj = model(**data)

@@ -91,14 +91,26 @@ def delete_all_events(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Ошибка при удалении всех мероприятий")
     return {"Все мероприятия и связанные с ними клиенты успешно удалены"}
 
-@app.delete("/events/{event_id}", status_code=200,
+@app.delete("/events/id/{event_id}", status_code=200,
             summary= "Удалить мероприятие по его номеру из БД")
-def delete_event(event_id: int, db: Session = Depends(get_db)):
+def delete_event_by_his_id(event_id: int, db: Session = Depends(get_db)):
     event_name = find_event_by_id(db, event_id)
     if not event_name:
         raise HTTPException(404, detail= "Искомого мероприятия не существует")
 
     is_deleted = delete_event_by_id(db, event_id)
     if not is_deleted:
-        raise HTTPException(404, detail="Ошибка при удалении мероприятия по номеру")
+        raise HTTPException(404, detail="Ошибка при удалении мероприятия")
+    return {f"Мероприятие {event_name} и связанные с ним клиенты успешно удалены"}
+
+@app.delete("/events/name/{event_name}", status_code=200,
+            summary="Удалить мероприятие по его наименованию из БД")
+def delete_event_by_his_name(event_name: str, db: Session = Depends(get_db)):
+    event = find_event_by_name(db, event_name)
+    if not event:
+        raise HTTPException(404,  detail= "Искомого мероприятия не существует")
+
+    is_deleted = delete_event_by_name(db, event_name)
+    if not is_deleted:
+        raise HTTPException(404, detail= "Ошибка при удалении мероприятия")
     return {f"Мероприятие {event_name} и связанные с ним клиенты успешно удалены"}
