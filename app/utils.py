@@ -1,12 +1,11 @@
 from typing import Type, Any, List, Dict
 
-from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload
 
 from app.ORM.Clients import Clients
 from app.ORM.Events import Events
-from app.ORM.Schema import ClientCreateBase, EventCreateBase, ClientReadBase, EventReadModel
+from app.ORM.Schema import ClientCreateBase, EventCreateBase
 
 
 def find_all_from_table(db: Session, model: Type[Any], *relations_to_load: Any) -> List[Any]:
@@ -21,7 +20,7 @@ def find_client_by_inn_and_event_id(db: Session, inn: str, event_id: int):
 def find_client_by_inn_and_event_number(db: Session, inn: str, event_number: int):
     return db.query(Clients).join(Events,Clients.event_id == Events.id).filter(Clients.inn == inn, Events.event_number == event_number).first()
 
-def find_event_in_client_table(db: Session, client_in: ClientCreateBase):
+def find_event_in_client_table_by_id(db: Session, client_in: ClientCreateBase):
     return db.query(Events).filter(Events.id == client_in.event_id).first()
 
 def find_event_by_name(db: Session, event_name: str):
