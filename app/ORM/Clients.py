@@ -8,7 +8,7 @@ class Clients(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     worker_fullname = Column(String, nullable=False)
-    inn = Column(String(10), unique=True, nullable=False)
+    inn = Column(String(10), nullable=False)
     company_name = Column(String, nullable=False)
     is_client = Column(String, nullable=False)
     working_sphere = Column(String, nullable=False)

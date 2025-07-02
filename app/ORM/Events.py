@@ -8,5 +8,7 @@ class Events(Base):
 
     id   = Column(Integer, primary_key=True, index=True)
     name = Column(String,  unique=True, nullable=False)
+    event_number = Column(Integer, nullable=False, index=True)
 
-    clients = relationship("Clients", back_populates="event", cascade="all, delete-orphan")
+    clients = relationship("Clients", back_populates="event", cascade="all, delete-orphan",
+                           passive_deletes=True)

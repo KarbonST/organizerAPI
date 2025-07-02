@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.ORM.Clients import Clients
 from app.ORM.Events import Events
-from app.ORM.Schema import ClientCreateBase, EventBase, ClientReadBase
+from app.ORM.Schema import ClientCreateBase, EventCreateBase, ClientReadBase, EventReadModel
 
 
 def find_all_from_table(db: Session, model: Type[Any], *relations_to_load: Any) -> List[Any]:
@@ -15,8 +15,11 @@ def find_all_from_table(db: Session, model: Type[Any], *relations_to_load: Any) 
         query = query.options(joinedload(rel))
     return query.all()
 
-def find_client_by_inn_and_event(db: Session, inn: str, event_id: int):
+def find_client_by_inn_and_event_id(db: Session, inn: str, event_id: int):
     return db.query(Clients).filter(Clients.inn == inn, Clients.event_id == event_id).first()
+
+def find_client_by_inn_and_event_number(db: Session, inn: str, event_number: int):
+    return db.query(Clients).join(Events,Clients.event_id == Events.id).filter(Clients.inn == inn, Events.event_number == event_number).first()
 
 def find_event_in_client_table(db: Session, client_in: ClientCreateBase):
     return db.query(Events).filter(Events.id == client_in.event_id).first()
@@ -25,14 +28,19 @@ def find_event_by_name(db: Session, event_name: str):
     return db.query(Events).filter(Events.name == event_name).first()
 
 def find_client_with_inn_on_event(db: Session, client_in: ClientCreateBase):
-    return db.query(Clients).filter(Clients.inn == client_in.inn, Clients.event_id == client_in.event_id).first()
+    event = find_event_by_number(db, client_in.event_number)
+    if not event:
+        return None
+    return db.query(Clients).filter(Clients.inn == client_in.inn, Clients.event_id == event.id).first()
 
-def find_event_in_table(db: Session, event_in: EventBase):
+def find_event_in_table(db: Session, event_in: EventCreateBase):
     return db.query(Events).filter(Events.name == event_in.name).first()
 
 def find_event_by_id(db: Session, event_id: int):
-    event = db.query(Events).filter(Events.id == event_id).first()
-    return event.name if event else None
+    return db.query(Events).filter(Events.id == event_id).first()
+
+def find_event_by_number(db: Session, event_number: int):
+    return db.query(Events).filter(Events.event_number == event_number).first()
 
 def delete_all_from_table(db: Session, model: Type[Any]) -> bool:
     try:
@@ -43,8 +51,18 @@ def delete_all_from_table(db: Session, model: Type[Any]) -> bool:
         db.rollback()
         return False
 
-def delete_client_by_inn_and_event(db: Session, inn: str, event_id: int) -> bool:
-    client = find_client_by_inn_and_event(db, inn, event_id)
+def delete_client_by_inn_and_event_id(db: Session, inn: str, event_id: int) -> bool:
+    client = find_client_by_inn_and_event_id(db, inn, event_id)
+    try:
+        db.delete(client)
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        return False
+    return True
+
+def delete_client_by_inn_and_event_number(db: Session, inn: str, event_number: int) -> bool:
+    client = find_client_by_inn_and_event_number(db, inn, event_number)
     try:
         db.delete(client)
         db.commit()
@@ -54,19 +72,40 @@ def delete_client_by_inn_and_event(db: Session, inn: str, event_id: int) -> bool
     return True
 
 def delete_event_by_id(db:Session, event_id: int):
-    deleted = db.query(Events).filter(Events.id == event_id).delete()
+    event = find_event_by_id(db, event_id)
+    if not event:
+        return False
+
+    db.delete(event)
     db.commit()
-    return bool(deleted)
+    return True
+
+def delete_event_by_number(db:Session, event_number: int):
+    event = find_event_by_number(db, event_number)
+    if not event:
+        return False
+
+    db.delete(event)
+    db.commit()
+    return True
 
 def delete_event_by_name(db:Session, event_name: str) -> bool:
-    event = find_event_in_table(db, find_event_by_name(db, event_name))
-    try:
-        db.delete(event)
-        db.commit()
-    except SQLAlchemyError:
-        db.rollback()
+    event = find_event_by_name(db, event_name)
+    if not event:
         return False
+
+    db.delete(event)
+    db.commit()
     return True
+
+def update_event_numbers(db: Session, removed_event_number: int):
+    db.query(Events) \
+      .filter(Events.event_number > removed_event_number) \
+      .update(
+         {Events.event_number: Events.event_number - 1},
+         synchronize_session="fetch"
+      )
+    db.commit()
 
 def add_to_db(db: Session, model: Type[Any], data: Dict[str, Any]) -> bool:
     obj = model(**data)
