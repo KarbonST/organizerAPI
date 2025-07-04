@@ -21,7 +21,7 @@ class ClientReadBase(BaseModel):
     event_name: str
     inn: constr(pattern=r"^\d{10,}$")
     company_name: str
-    is_client: constr(pattern=r'^(?i)(?:да|нет)$')
+    is_client: constr(pattern=r"^(?i)(?:да|нет)$")
     working_sphere: str
     contact_fullname: str
     phone: str

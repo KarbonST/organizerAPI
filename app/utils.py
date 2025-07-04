@@ -114,6 +114,7 @@ def add_to_db(db: Session, model: Type[Any], data: Dict[str, Any]) -> bool:
         db.commit()
         db.refresh(obj)
         return True
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
         db.rollback()
+        print("DB error in add_to_db:", e)
         return False
