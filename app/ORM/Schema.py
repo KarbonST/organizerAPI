@@ -2,9 +2,9 @@ from pydantic import BaseModel, constr
 
 class ClientCreateBase(BaseModel):
     worker_fullname: str
-    inn: constr(pattern=r"^\d{10}$")
+    inn: constr(pattern=r"^\d{10,}$")
     company_name: str
-    is_client: constr(pattern=r"^(да|нет)$")
+    is_client: constr(pattern=r'^(?i)(?:да|нет)$')
     working_sphere: str
     contact_fullname: str
     phone: str
@@ -19,9 +19,9 @@ class ClientCreateBase(BaseModel):
 class ClientReadBase(BaseModel):
     worker_fullname: str
     event_name: str
-    inn: constr(pattern=r"^\d{10}$")
+    inn: constr(pattern=r"^\d{10,}$")
     company_name: str
-    is_client: constr(pattern=r"^(да|нет)$")
+    is_client: constr(pattern=r'^(?i)(?:да|нет)$')
     working_sphere: str
     contact_fullname: str
     phone: str
